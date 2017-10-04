@@ -1,9 +1,16 @@
 'use strict'
 
+const { getFlickr } = require('./flickr-helper')
+const imageApi = require('./api/images')
 const express = require('express')
-const app = express()
 const PORT = process.env.PORT || 8080
 
-app.use('/images', require('./api/images'))
+(async () => {
+  const app = express()
 
-app.listen(PORT)
+  const flickr = await getFlickr()
+
+  app.use('/images', imageApi(flickr))
+
+  app.listen(PORT)
+})()

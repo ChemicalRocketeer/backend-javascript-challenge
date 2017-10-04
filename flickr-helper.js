@@ -1,7 +1,6 @@
 'use strict'
 
 const P = require('bluebird')
-const justThisOnce = require('./just-this-once')
 const Flickr = require('flickrapi')
 // convert flickr's methods to promisey ones
 P.promisifyAll(Flickr)
@@ -11,14 +10,12 @@ const flickrOptions = {
   progress: false // suppress progress bars in stdout
 }
 
-const getFlickr = justThisOnce(
-  Flickr.tokenOnlyAsync(flickrOptions)
-  .then(flickr => {
-    P.promisifyAll(flickr)
-    P.promisifyAll(flickr.photos)
-    return flickr
-  })
-)
+const getFlickr = async () => {
+  const flickr = await Flickr.tokenOnlyAsync(flickrOptions)
+  P.promisifyAll(flickr)
+  P.promisifyAll(flickr.photos)
+  return flickr
+}
 
 module.exports = {
   getFlickr

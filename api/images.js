@@ -1,20 +1,31 @@
 'use strict'
 
 const express = require('express')
-const router = express.Router()
 const handler = require('../express-handler-boilerplate')
-const { getFlickr } = require('../flickr-helper')
 
 const flatmap = (arr, lambda) => [].concat(...arr.map(lambda))
 
-router.get('/', handler(async (req, res, next) => {
-  const flickr = await getFlickr()
-  const text = req.query.query
-  const response = await flickr.photos.searchAsync({
-    text,
-    per_page: 10
-  })
-  res.json(response.photos.photo)
-}))
+module.exports = ({ flickr }) => {
+  const router = express.Router()
 
-module.exports = router
+  router.get('/', handler(async (req, res, next) => {
+    const text = req.query.query
+    const response = await flickr.photos.searchAsync({
+      text,
+      per_page: 10
+    })
+    // an array of all the fetches we have to make for photo sizes
+    const fetches = flatmap(response.photos.photo, async (photo) => {
+      return flickr.photos.getSizesAsync({
+        photo_id: photo.id
+      })
+        .then(size => {
+
+        })
+    })
+    await Promise.all(fetches)
+    res.json(response.photos.photo)
+  }))
+
+  return router
+}
